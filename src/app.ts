@@ -7,8 +7,6 @@ export type AppEnv = {
   CORS_ALLOW_ORIGIN?: string;
 };
 
-const DEFAULT_IMAGE_URLS_FALLBACK = ['/images/1.webp', '/images/2.webp'];
-
 function getFilename(pathname: string): string {
   const idx = pathname.lastIndexOf('/');
   return idx >= 0 ? pathname.slice(idx + 1) : pathname;
@@ -104,9 +102,8 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
   }
 
   const envUrls = parseImageUrls(env.IMAGE_URLS);
-  const defaultUrls = DEFAULT_IMAGE_URLS.length > 0 ? DEFAULT_IMAGE_URLS : DEFAULT_IMAGE_URLS_FALLBACK;
-  const imageUrls = envUrls.length > 0 ? envUrls : defaultUrls;
-  const configuredSource = envUrls.length > 0 ? 'env' : 'default';
+  const imageUrls = envUrls.length > 0 ? envUrls : DEFAULT_IMAGE_URLS;
+  const configuredSource = envUrls.length > 0 ? 'env' : 'generated';
 
   if (url.pathname === '/' || url.pathname === '/health') {
     const resp = withCors(
@@ -159,6 +156,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
       return withCors(new Response(null, { status: 302, headers }), allowOrigin);
     } catch (e) {
       const isInvalidId = e instanceof Error && e.message === 'Invalid id';
+      const isNotConfigured = e instanceof Error && e.message === 'No image URLs configured';
       const resp = withCors(
         json(
           isInvalidId
@@ -166,9 +164,14 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
                 error: 'Invalid id',
                 hint: 'Use /api/random?id=xxx where xxx matches a filename (without extension) or an index.'
               }
+            : isNotConfigured
+            ? {
+                error: 'No image URLs configured',
+                hint: 'Put .webp files into public/images and run `npm run build`, or set env var IMAGE_URLS to a comma-separated list of image URLs.'
+              }
             : {
                 error: 'IMAGE_URLS not configured',
-                hint: 'Set env var IMAGE_URLS to a comma-separated list of image URLs'
+                hint: 'Set env var IMAGE_URLS to a comma-separated list of image URLs, or use public/images + generated defaults.'
               },
           { status: isInvalidId ? 404 : 500 }
         ),
@@ -184,12 +187,18 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
       const headers = new Headers(cacheHeaders());
       headers.set('location', resolveToAbsoluteUrl(url, picked.url).toString());
       return withCors(new Response(null, { status: 302, headers }), allowOrigin);
-    } catch {
+    } catch (e) {
+      const isNotConfigured = e instanceof Error && e.message === 'No image URLs configured';
       const resp = json(
-        {
-          error: 'IMAGE_URLS not configured',
-          hint: 'Set env var IMAGE_URLS to a comma-separated list of image URLs'
-        },
+        isNotConfigured
+          ? {
+              error: 'No image URLs configured',
+              hint: 'Put .webp files into public/images and run `npm run build`, or set env var IMAGE_URLS to a comma-separated list of image URLs.'
+            }
+          : {
+              error: 'IMAGE_URLS not configured',
+              hint: 'Set env var IMAGE_URLS to a comma-separated list of image URLs, or use public/images + generated defaults.'
+            },
         { status: 500 }
       );
       return method === 'HEAD' ? toHead(resp) : resp;

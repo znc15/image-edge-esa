@@ -1,7 +1,7 @@
-# image-edge-esa
+# Image Api for Aliyun ESA / Cloudflare Workers / Pages
 
 一个可以部署到函数或者Page的随机图床 API。
-
+支持 Aliyun ESA、Cloudflare Workers 和 Cloudflare Pages Functions。
 
 ## 功能
 
@@ -16,10 +16,13 @@
 
 ### 环境变量
 
-- `IMAGE_URLS`：图片 URL 列表（逗号分隔），例如 `https://example.com/1.webp,https://example.com/2.webp` 或 `/images/1.webp,/images/2.webp`
+- `IMAGE_URLS`：图片 URL 列表（逗号分隔，可选）。配置后会覆盖默认图片列表，例如 `https://example.com/1.webp,https://example.com/2.webp` 或 `/images/1.webp,/images/2.webp`
 - `CORS_ALLOW_ORIGIN`：跨域来源（默认 `*`）
 
 ### Cloudflare (Workers / Pages)
+
+如果你把图片放在 `public/images/*.webp`，构建时会通过脚本生成默认列表（`scripts/generate-image-urls.mjs` → `src/generated/imageUrls.ts`），此时不需要手动填写 `IMAGE_URLS`。
+需要使用外部图床或自定义来源时，再配置 `IMAGE_URLS`。
 
 **Workers：**
 1. 编辑 [wrangler.toml](wrangler.toml)，在 `[env.production]` 下配置：
@@ -35,9 +38,7 @@
 
 ### 阿里云 ESA
 
-因为ESA没有环境配置，会自动使用脚本编译image文件夹中的所有图片。
-
-用 `GET /health` 查看当前使用的是 `env` 还是 `default`。
+因为 ESA 没有环境配置，会自动使用脚本收集 `public/images` 中的图片并生成默认列表。
 
 ## 本地开发
 
