@@ -76,7 +76,8 @@ function pickById(urls: string[], idRaw: string | null, requestUrl: URL): Picked
   throw new Error('Invalid id');
 }
 
-function cacheHeaders(): HeadersInit {
+function cacheHeaders(mode: 'short' | 'no-store' = 'short'): HeadersInit {
+  if (mode === 'no-store') return { 'cache-control': 'no-store' };
   return { 'cache-control': 'public, max-age=60' };
 }
 
@@ -119,7 +120,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
             source: configuredSource
           }
         },
-        { headers: cacheHeaders() }
+        { headers: cacheHeaders('short') }
       ),
       allowOrigin
     );
@@ -129,6 +130,8 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
   if (url.pathname === '/api/random') {
     const wantsJson = url.searchParams.has('json') || url.searchParams.get('format') === 'json';
     const idParam = url.searchParams.get('id');
+    const isDeterministic = !!(idParam && idParam.trim());
+    const cacheMode: 'short' | 'no-store' = isDeterministic ? 'short' : 'no-store';
 
     try {
       const picked = pickById(imageUrls, idParam, url);
@@ -143,7 +146,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
               total: picked.total,
               source: configuredSource
             },
-            { headers: cacheHeaders() }
+            { headers: cacheHeaders(cacheMode) }
           ),
           allowOrigin
         );
@@ -151,7 +154,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
       }
 
       const absolute = resolveToAbsoluteUrl(url, picked.url);
-      const headers = new Headers(cacheHeaders());
+      const headers = new Headers(cacheHeaders(cacheMode));
       headers.set('location', absolute.toString());
       return withCors(new Response(null, { status: 302, headers }), allowOrigin);
     } catch (e) {
@@ -173,7 +176,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
                 error: 'IMAGE_URLS not configured',
                 hint: 'Set env var IMAGE_URLS to a comma-separated list of image URLs, or use public/images + generated defaults.'
               },
-          { status: isInvalidId ? 404 : 500 }
+          { status: isInvalidId ? 404 : 500, headers: cacheHeaders('no-store') }
         ),
         allowOrigin
       );
@@ -184,7 +187,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
   if (url.pathname === '/r') {
     try {
       const picked = pickById(imageUrls, null, url);
-      const headers = new Headers(cacheHeaders());
+      const headers = new Headers(cacheHeaders('no-store'));
       headers.set('location', resolveToAbsoluteUrl(url, picked.url).toString());
       return withCors(new Response(null, { status: 302, headers }), allowOrigin);
     } catch (e) {
@@ -199,7 +202,7 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
               error: 'IMAGE_URLS not configured',
               hint: 'Set env var IMAGE_URLS to a comma-separated list of image URLs, or use public/images + generated defaults.'
             },
-        { status: 500 }
+        { status: 500, headers: cacheHeaders('no-store') }
       );
       return method === 'HEAD' ? toHead(resp) : resp;
     }

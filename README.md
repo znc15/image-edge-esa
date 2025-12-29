@@ -21,20 +21,21 @@
 
 ### Cloudflare (Workers / Pages)
 
-如果你把图片放在 `public/images/*.webp`，构建时会通过脚本生成默认列表（`scripts/generate-image-urls.mjs` → `src/generated/imageUrls.ts`），此时不需要手动填写 `IMAGE_URLS`。
-需要使用外部图床或自定义来源时，再配置 `IMAGE_URLS`。
+部署到 Cloudflare 时：
 
-**Workers：**
-1. 编辑 [wrangler.toml](wrangler.toml)，在 `[env.production]` 下配置：
-   ```toml
-   [env.production]
-   vars = { IMAGE_URLS = "https://example.com/1.webp,..." }
-   ```
-2. 或在 Cloudflare Dashboard → Workers → Settings → Environment Variables 中配置
+- 默认图片列表来自构建生成（`scripts/generate-image-urls.mjs` → `src/generated/imageUrls.ts`），不需要手动维护图片 URL
+- 如需使用外部图床/自定义来源，可选配置 `IMAGE_URLS` 来覆盖默认列表
 
-**Pages：**
-1. Cloudflare Dashboard → Pages → 你的项目 → Settings → Environment variables
-2. 生产/预览环境分别配置 `IMAGE_URLS` 和 `CORS_ALLOW_ORIGIN`
+**Workers（部署）：**
+1. 可选：在 Cloudflare Dashboard → Workers → Settings → Environment Variables 配置 `IMAGE_URLS`、`CORS_ALLOW_ORIGIN`
+2. 部署：`npm run deploy:workers`
+
+**Pages（部署）：**
+1. 将仓库连接到 Cloudflare Pages 并设置构建：
+   - Build command：`npm run build`
+   - Output directory：`public`
+2. 可选：Cloudflare Dashboard → Pages → 你的项目 → Settings → Environment variables 配置 `IMAGE_URLS`、`CORS_ALLOW_ORIGIN`
+3. 或直接部署（需要已登录/绑定）：`npm run deploy:pages`
 
 ### 阿里云 ESA
 
