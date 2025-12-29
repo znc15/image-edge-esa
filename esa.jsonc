@@ -1,0 +1,9 @@
+{
+  "name": "image-edge-esa",
+  "entry": "./dist/worker.js",
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "assets": {
+    "directory": "./public"
+  }
+}

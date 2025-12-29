@@ -1,0 +1,7 @@
+name = "image-edge-esa"
+main = "src/worker.ts"
+compatibility_date = "2025-12-29"
+
+[vars]
+# IMAGE_URLS = "https://example.com/1.webp,https://example.com/2.webp"
+CORS_ALLOW_ORIGIN = "*"

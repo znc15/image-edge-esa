@@ -1,0 +1,31 @@
+{
+  "name": "image-edge-esa",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev:workers": "wrangler dev src/worker.ts",
+    "dev:pages": "wrangler pages dev public --compatibility-date=2025-12-29",
+    "build": "node scripts/generate-image-urls.mjs && tsc -p tsconfig.build.json",
+    "esa:version": "npx esa-cli -v",
+    "esa:login": "npx esa-cli login",
+    "esa:dev": "npx esa-cli dev",
+    "esa:deploy": "npm run build && npx esa-cli deploy",
+    "deploy:workers": "wrangler deploy src/worker.ts",
+    "deploy:pages": "wrangler pages deploy public",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251201.0",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "esa-cli": "^1.0.3",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.100.0"
+  }
+}

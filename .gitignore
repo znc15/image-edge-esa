@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+
+# build outputs
+/dist/
+
+# local caches / tooling
+.wrangler/
+.dev/
+output_webp/
+
+# env files
+.env
+.env.*
+.dev.vars
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
