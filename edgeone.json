@@ -1,0 +1,36 @@
+{
+    "buildCommand": "npm run build",
+    "installCommand": "npm install",
+    "outputDirectory": "public",
+    "nodeVersion": "22.11.0",
+    "headers": [
+        {
+            "source": "/*",
+            "headers": [
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "max-age=7200"
+                }
+            ]
+        },
+        {
+            "source": "/images/*",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "max-age=31536000"
+                }
+            ]
+        }
+    ],
+    "caches": [
+        {
+            "source": "/images/*",
+            "cacheTtl": 31536000
+        }
+    ]
+}

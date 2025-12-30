@@ -1,7 +1,7 @@
-# Image Api for Aliyun ESA / Cloudflare Workers / Pages
+# Image Api for Aliyun ESA / Cloudflare Workers / Pages / EdgeOne Pages
 
 一个可以部署到函数或者Page的随机图床 API。
-支持 Aliyun ESA、Cloudflare Workers 和 Cloudflare Pages Functions。
+支持 Aliyun ESA、Cloudflare Workers、Cloudflare Pages Functions，以及 EdgeOne Pages（静态托管/构建/环境变量）。
 
 ## 功能
 
@@ -37,6 +37,25 @@
 2. 可选：Cloudflare Dashboard → Pages → 你的项目 → Settings → Environment variables 配置 `IMAGE_URLS`、`CORS_ALLOW_ORIGIN`
 3. 或直接部署（需要已登录/绑定）：`npm run deploy:pages`
 
+### EdgeOne Pages
+
+部署到 EdgeOne Pages 时：
+
+- 静态输出目录使用 `public`（包含展示页 `index.html` 和 `images/*.webp`）
+- 默认图片列表同样来自构建生成（`scripts/generate-image-urls.mjs` → `src/generated/imageUrls.ts`）
+- 如需使用外部图床/自定义来源，可在项目环境变量中配置 `IMAGE_URLS` 覆盖默认列表
+
+**Pages（部署）：**
+1. 在 EdgeOne Pages 控制台创建项目并导入仓库
+2. 配置构建（项目设置 → 构建部署配置）：
+	- Root directory：`./`
+	- Build command：`npm run build`
+	- Output directory：`public`
+	- Node.js 版本：选择 `18` 或更高（本项目要求 Node >= 18）
+3. 可选：项目设置 → 环境变量 配置 `IMAGE_URLS`、`CORS_ALLOW_ORIGIN`
+
+> 说明：本仓库的 `functions/*` 目录为 Cloudflare Pages Functions 的结构；EdgeOne Pages 的函数能力（Pages Functions/Edge Functions）需要按其平台规范单独适配。
+
 ### 阿里云 ESA
 
 因为 ESA 没有环境配置，会自动使用脚本收集 `public/images` 中的图片并生成默认列表。
@@ -53,6 +72,7 @@
 - Workers：`npm run deploy:workers`
 - Pages：`npm run deploy:pages`
 - ESA：`npm run esa:deploy`
+- EdgeOne Pages：在控制台导入仓库并按“EdgeOne Pages”小节配置构建/输出
 
 ## 技术细节
 
