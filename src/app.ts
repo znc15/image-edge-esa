@@ -106,7 +106,16 @@ export async function handle(req: Request, env: AppEnv): Promise<Response> {
   const imageUrls = envUrls.length > 0 ? envUrls : DEFAULT_IMAGE_URLS;
   const configuredSource = envUrls.length > 0 ? 'env' : 'generated';
 
-  if (url.pathname === '/' || url.pathname === '/health') {
+  if (url.pathname === '/') {
+    const headers = new Headers(cacheHeaders('short'));
+    headers.set('location', new URL('/index.html', url.origin).toString());
+    // Root should be the static page; redirect to index.html for platforms
+    // that route '/' through a function handler.
+    const resp = withCors(new Response(null, { status: 302, headers }), allowOrigin);
+    return method === 'HEAD' ? toHead(resp) : resp;
+  }
+
+  if (url.pathname === '/health') {
     const resp = withCors(
       json(
         {

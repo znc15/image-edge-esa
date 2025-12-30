@@ -1,15 +1,9 @@
-import { handle } from '../src/app';
-
 export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const url = new URL(request.url);
-  url.pathname = '/';
-  const req = new Request(url.toString(), request);
-  return handle(req, env as any);
+  url.pathname = '/index.html';
+  return Response.redirect(url.toString(), 302);
 };
 
 export const onRequestOptions: PagesFunction = async ({ request, env }) => {
-  const url = new URL(request.url);
-  url.pathname = '/';
-  const req = new Request(url.toString(), request);
-  return handle(req, env as any);
+  return new Response(null, { status: 204 });
 };
